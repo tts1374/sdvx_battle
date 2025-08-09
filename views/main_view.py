@@ -39,8 +39,8 @@ class MainView:
         
         # DJNAME（バリデーション付き）
         self.djname_input = ft.TextField(
-            label="DJNAME (最大6文字 半角英数字記号)",
-            max_length=6,
+            label="PLAYER NAME (最大8文字 半角英数字記号)",
+            max_length=8,
             width=200,
             on_change=self.validate_djname
         )

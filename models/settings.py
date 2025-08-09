@@ -29,7 +29,7 @@ class Settings:
         return os.path.isfile(file_path)
     
     def is_valid(self) -> bool:
-        djname_ok = re.fullmatch(r'^[a-zA-Z0-9.\-\*&!?#$]{1,6}$', self.djname) is not None
+        djname_ok = re.fullmatch(r'^[a-zA-Z0-9.\-\*&!?#$ ]{1,8}$', self.djname) is not None
         room_pass_ok = re.fullmatch(r'^[a-zA-Z0-9_-]{4,36}$', self.room_pass) is not None
         mode_ok = self.mode in [BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_MODE_POINT_ARENA, BATTLE_MODE_TOTAL_SCORE_SINGLE, BATTLE_MODE_POINT_SINGLE]
         user_num_ok = has_rule_in_mode(self.mode, BATTLE_RULE_SINGLE) or (self.user_num != 0)

@@ -46,7 +46,7 @@ function renderSongInfo(song, type) {
     <div class="song_info ${safeType}">
       <div class="stage_no">${escapeHTML(song.stage_no)}${indicator(
     song.stage_no
-  )} STAGE</div>
+  )} TRACK</div>
       <div class="song_name ${safeType}">${escapeHTML(song.song_name)}</div>
       <div class="difficulty">
         <div class="difficulty_${safeDiff}">${escapeHTML(

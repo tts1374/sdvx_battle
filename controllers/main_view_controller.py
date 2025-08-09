@@ -54,7 +54,7 @@ class MainViewController(IMainViewController):
 
     # DJNAMEバリデーション
     def validate_djname(self, e):
-        pattern = r'^[a-zA-Z0-9.\-*&!?#$]*$'
+        pattern = r'^[a-zA-Z0-9.\-\*&!?#$ ]*$'
         if not re.fullmatch(pattern, self.app.djname_input.value):
             self.app.djname_input.error_text = "使用可能文字：a-z A-Z 0-9 .- *&!?#$"
         else:
