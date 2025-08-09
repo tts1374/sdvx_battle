@@ -40,6 +40,7 @@
 1. 解凍したフォルダ内の  
    **`SDVX_Battle.exe`** を起動します。
 2. 以下の情報を入力してください。
+<img width="1178" height="862" alt="image" src="https://github.com/user-attachments/assets/86292665-d22c-47d8-951e-3ce26f82901a" />
 
 | 項目 | 説明 |
 |-------|-------|
@@ -65,7 +66,8 @@
 - **自分のスコアをすでに投稿している場合**は「削除」ボタンが表示されます。  
   対戦データ全体が削除され、対戦相手のスコアも同時に消去されます。  
   ※他のプレイヤーの結果も消えるため、削除は慎重に行ってください。
-  
+<img width="1174" height="853" alt="image" src="https://github.com/user-attachments/assets/2a367f4e-ead5-4c0d-b93e-12eb1739d6e4" />
+ 
 
 ---
 
@@ -73,7 +75,8 @@
 
 1. OBSのシーンに**ブラウザソース**を追加します。
 2. 以下の設定を行ってください。
-<img width="715" height="595" alt="OBS" src="https://github.com/user-attachments/assets/4a8405d4-fd5e-4dd8-a073-61de590d12d9" />
+<img width="712" height="568" alt="image" src="https://github.com/user-attachments/assets/2c425247-32df-4cb0-8a48-e26e71d461e7" />
+
 
 | 項目 | 設定内容 |
 |-------|-------|
