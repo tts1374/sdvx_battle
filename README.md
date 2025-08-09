@@ -19,7 +19,7 @@
 ## 依存ツールについて
 
 本ツールは  
-[sdvx_helper](https://github.com/dj-kata/sdvx_helper) の出力データ（`out/history_cursong.xml`）を利用します。
+[sdvx_helper](https://github.com/dj-kata/sdvx_helper) の出力データを利用します。
 
 必ず事前にこちらのツールを導入し、動作する状態にしてからご利用ください。
 
