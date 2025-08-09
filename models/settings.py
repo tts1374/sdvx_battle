@@ -17,23 +17,45 @@ class Settings:
     result_source: int = RESULT_SOURCE_SDVX_HELPER
     result_dir: Optional[str] = None
     
+    # exeファイル
+    def get_exe(self) -> str:
+        if self.result_source == RESULT_SOURCE_SDVX_HELPER:
+            return os.path.join(self.result_dir, "sdvx_helper.exe")
+        else:
+            raise None
+        
     # リザルトファイル
     def get_result_file(self) -> str:
         if self.result_source == RESULT_SOURCE_SDVX_HELPER:
             return os.path.join(self.result_dir, "out", "sdvx_battle.xml")
         else:
             raise None
-        
-    def result_file_exists(self) -> bool:
-        file_path = self.get_result_file()
-        return os.path.isfile(file_path)
     
+    def exe_exists(self) -> bool:
+        file_path = self.get_exe()
+        return os.path.isfile(file_path)
+
+    # リザルトファイル作成
+    def create_result_file_if_needed(self):
+        file_path = self.get_result_file()
+        if file_path is None:
+            return  # Noneなら処理しない
+
+        if not os.path.isfile(file_path):
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, "w", encoding="utf-8") as f:
+                # 必要に応じて初期データを記載（ここではXMLの雛形を作成）
+                f.write('<?xml version="1.0" encoding="utf-8"?>\n<Items>\n</Items>')
+            print(f"[INFO] 新しいリザルトファイルを作成しました: {file_path}")
+        else:
+            print(f"[INFO] 既存のリザルトファイルが存在します: {file_path}")
+
     def is_valid(self) -> bool:
         djname_ok = re.fullmatch(r'^[a-zA-Z0-9.\-\*&!?#$ ]{1,8}$', self.djname) is not None
         room_pass_ok = re.fullmatch(r'^[a-zA-Z0-9_-]{4,36}$', self.room_pass) is not None
         mode_ok = self.mode in [BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_MODE_POINT_ARENA, BATTLE_MODE_TOTAL_SCORE_SINGLE, BATTLE_MODE_POINT_SINGLE]
         user_num_ok = has_rule_in_mode(self.mode, BATTLE_RULE_SINGLE) or (self.user_num != 0)
         result_source_ok = self.result_source in [RESULT_SOURCE_SDVX_HELPER]
-        file_ok = self.result_dir is not None and self.result_file_exists()
+        file_ok = self.result_dir is not None and self.exe_exists()
 
         return djname_ok and room_pass_ok and mode_ok and user_num_ok and result_source_ok and file_ok

@@ -133,6 +133,9 @@ class MainViewController(IMainViewController):
             self.app.room_id, self.app.user_token = await self.main_app_serivce.start_battle(settings, self._load_result_table)
             self.app.settings = settings
             
+            # ファイルが無い場合作成
+            self.app.settings.create_result_file_if_needed()
+            
             # ファイル監視
             self.file_watch_service = FileWatcher(self)
             self.observer = Observer()
