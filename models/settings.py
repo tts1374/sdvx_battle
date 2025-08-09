@@ -20,7 +20,7 @@ class Settings:
     # リザルトファイル
     def get_result_file(self) -> str:
         if self.result_source == RESULT_SOURCE_SDVX_HELPER:
-            return os.path.join(self.result_dir, "out", "history_cursong.xml")
+            return os.path.join(self.result_dir, "out", "sdvx_battle.xml")
         else:
             raise None
         

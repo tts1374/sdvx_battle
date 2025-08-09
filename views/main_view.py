@@ -13,7 +13,31 @@ from models.settings import Settings
 from utils.common import has_rule_in_mode, safe_print
 from views.arena_result_table import ArenaResultTable
 from views.single_result_table import SingleResultTable
+    
+def dump_threads():
+    print("\n==== 残っているスレッド一覧 ====")
+    for thread in threading.enumerate():
+        print(f"[Thread] name={thread.name}, daemon={thread.daemon}, ident={thread.ident}")
+    print("\n==== スレッドのスタックトレース ====")
+    frames = sys._current_frames()
+    for thread in threading.enumerate():
+        print(f"\n# Thread: {thread.name} (id={thread.ident})")
+        frame = frames.get(thread.ident, None)
+        if frame:
+            traceback.print_stack(frame)
+        else:
+            print("  (スタック情報なし)")
 
+def dump_asyncio_tasks():
+    print("\n==== 残っている asyncio タスク一覧 ====")
+    for task in asyncio.all_tasks():
+        coro = task.get_coro()
+        name = getattr(coro, '__name__', str(coro))
+        print(f"[Task] coro={name}, done={task.done()}, cancelled={task.cancelled()}")
+        if not task.done():
+            print("  --- タスクスタック ---")
+            for frame in task.get_stack():
+                traceback.print_stack(frame)
 class MainView:
     def __init__(self, page: ft.Page, factory: IAppFactory):
         self.controller = factory.create_main_view_controller(self)
@@ -354,30 +378,7 @@ class MainView:
         if e.data == "close":
             await self.on_close()
     
-    def dump_threads():
-        print("\n==== 残っているスレッド一覧 ====")
-        for thread in threading.enumerate():
-            print(f"[Thread] name={thread.name}, daemon={thread.daemon}, ident={thread.ident}")
-        print("\n==== スレッドのスタックトレース ====")
-        frames = sys._current_frames()
-        for thread in threading.enumerate():
-            print(f"\n# Thread: {thread.name} (id={thread.ident})")
-            frame = frames.get(thread.ident, None)
-            if frame:
-                traceback.print_stack(frame)
-            else:
-                print("  (スタック情報なし)")
 
-    def dump_asyncio_tasks():
-        print("\n==== 残っている asyncio タスク一覧 ====")
-        for task in asyncio.all_tasks():
-            coro = task.get_coro()
-            name = getattr(coro, '__name__', str(coro))
-            print(f"[Task] coro={name}, done={task.done()}, cancelled={task.cancelled()}")
-            if not task.done():
-                print("  --- タスクスタック ---")
-                for frame in task.get_stack():
-                    traceback.print_stack(frame)
                     
     async def on_close(self):
         safe_print("[on_close] start")
@@ -401,10 +402,10 @@ class MainView:
             await asyncio.sleep(0.1)  # 少し待つ
 
             # 残っているタスク一覧表示
-            self.dump_asyncio_tasks()
+            dump_asyncio_tasks()
 
             # 残っているスレッド一覧表示
-            self.dump_threads()
+            dump_threads()
 
             # 最後に強制終了（本番では削除可）
             safe_print("[on_close] 強制終了")
