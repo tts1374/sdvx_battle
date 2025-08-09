@@ -1,13 +1,13 @@
 import flet as ft
-from config.config import BATTLE_MODE_POINT_ARENA
+from config.config import BATTLE_MODE_POINT_SINGLE, BATTLE_RULE_NORMAL, BATTLE_RULE_POINT
+from utils.common import has_rule_in_mode
 
 # 難易度色マッピング
 DIFFICULTY_COLOR_MAP = {
-    "BEGINNER": "#d3e173",
-    "NORMAL": "#21efef",
-    "HYPER": "#ffc800",
-    "ANOTHER": "#fba8c1",
-    "LEGGENDARIA": "#ce8ef9",
+    "NOV": "#aaaaff",
+    "ADV": "#ffffaa",
+    "EXH": "#ffaaaa",
+    "APPEND": "#ffccff",
 }
 TITLE_NAME_COLOR = ft.Colors.WHITE
 MAIN_COLOR = "#EEEEEE"
@@ -50,10 +50,13 @@ class SingleResultTable:
             )
     # ユーザスコア出力
     def _user_score(self, result: dict | None, mode: int, is_left: bool) -> ft.Row:
-        label = "SCORE" if mode == BATTLE_MODE_POINT_ARENA else "EX SCORE"
+        label = "SCORE" if has_rule_in_mode(mode, BATTLE_RULE_NORMAL) else "EX SCORE"
         if result:
-            value = result["score"] if mode == BATTLE_MODE_POINT_ARENA else result["ex_score"]
-            highlight = result.get("pt", 0) > 0
+            value = result["score"] if has_rule_in_mode(mode, BATTLE_RULE_NORMAL) else result["ex_score"]
+            if has_rule_in_mode(mode, BATTLE_RULE_POINT):
+                highlight = result.get("pt", 0) > 0
+            else:
+                highlight = False
         else:
             value = "-"
             highlight = False
@@ -114,7 +117,7 @@ class SingleResultTable:
     def _song_info(self, song: dict) -> ft.Column:
         stage_no = song.get("stage_no", 1)
         stage_suffix = {1: "ST", 2: "ND", 3: "RD"}.get(stage_no if stage_no < 20 else stage_no % 10, "TH")
-        stage_label = f"{stage_no}{stage_suffix} STAGE"
+        stage_label = f"{stage_no}{stage_suffix} TRACK"
 
         title = song.get("song_name", "")
         difficulty = song.get("difficulty", "")
@@ -146,7 +149,7 @@ class SingleResultTable:
         )
     # リザルトの各曲行（最大4件）
     def _build_song_rows(self) -> list[ft.Container]:
-        mode = self.result_data.get("mode", BATTLE_MODE_POINT_ARENA)
+        mode = self.result_data.get("mode", BATTLE_MODE_POINT_SINGLE)
         users = self.result_data.get("users", [])
         user_ids = [u["user_id"] for u in users] + [None] * (2 - len(users))
         user_ids = user_ids[:2]  # 常に2人
@@ -253,16 +256,20 @@ class SingleResultTable:
         return 0
     
     def _build_total_row(self) -> ft.Row:
+        user1_total_score = self._get_total_pt(0)
+        user2_total_score = self._get_total_pt(1)
+        user1_highlight = user1_total_score >= user2_total_score
+        user2_highlight = user2_total_score >= user1_total_score
         return ft.Container(
             content=ft.Row([
                 ft.Column([
                     ft.Text("TOTAL", size=10, color=MAIN_COLOR),
-                    ft.Text(str(self._get_total_pt(0)), size=24, color=MAIN_COLOR)
+                    ft.Text(str(user1_total_score), size=24, color="#fab27b" if user1_highlight else MAIN_COLOR)
                 ], alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER, expand=True),
                 ft.Column([
                     ft.Text("TOTAL", size=10, color=MAIN_COLOR),
-                    ft.Text(str(self._get_total_pt(1)), size=24, color=MAIN_COLOR)
+                    ft.Text(str(user2_total_score), size=24, color="#fab27b" if user2_highlight else MAIN_COLOR)
                 ], alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER, expand=True),
             ]),

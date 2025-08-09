@@ -96,7 +96,7 @@ li {
 }
 
 .user_result .user_result_score {
-  font-size: 2.5rem;
+  font-size: 2.0rem;
   color: #fff;
   line-height: 2.5rem;
 }
@@ -156,25 +156,20 @@ li {
   margin-top: 5px;
   font-size: 0.8rem;
 }
-
-.song_info .difficulty .difficulty_LEGGENDARIA {
-  color: #ce8ef9;
+.song_info .difficulty .difficulty_APPEND {
+  color: #ffccff;
 }
 
-.song_info .difficulty .difficulty_HYPER {
-  color: #ffc800;
+.song_info .difficulty .difficulty_ADV {
+  color: #ffffaa;
 }
 
-.song_info .difficulty .difficulty_ANOTHER {
-  color: #fba8c1;
+.song_info .difficulty .difficulty_EXH {
+  color: #ffaaaa;
 }
 
-.song_info .difficulty .difficulty_NORMAL {
-  color: #21efef;
-}
-
-.song_info .difficulty .difficulty_BEGINNER {
-  color: #d3e173;
+.song_info .difficulty .difficulty_NOV {
+  color: #aaaaff;
 }
 
 .result_area {
@@ -200,6 +195,10 @@ li {
   font-size: 2rem;
   line-height: 2rem;
   color: #fff;
+}
+
+.result_area .user .total_pt.top_score {
+  color: #fab27b;
 }
 
 .result_area .song_item {

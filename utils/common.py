@@ -3,7 +3,7 @@ import sys
 import os
 import io
 
-from config.config import IS_RELEASE
+from config.config import BATTLE_MODE, IS_RELEASE
 
 def now_str():
     return datetime.now().isoformat()
@@ -44,3 +44,10 @@ def safe_int(value, default=0):
         return int(value)
     except (ValueError, TypeError):
         return default
+    
+# モードがルールを持っているかどうか
+def has_rule_in_mode(mode: int, rule: str) -> bool:
+    for battle_mode in BATTLE_MODE:
+        if battle_mode["value"] == mode:
+            return rule in battle_mode["rule"]
+    return False  # 指定のmodeが存在しない場合はFalse

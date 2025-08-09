@@ -1,4 +1,4 @@
-APP_VERSION = "v0.2.1"
+APP_VERSION = "v0.1.0"
 IS_RELEASE = False
 DB_FILE = "result.db"
 ZIP_NAME = "SDVX_Battle.zip"
@@ -8,11 +8,37 @@ BATTLE_MODE_TOTAL_SCORE_ARENA = 1
 BATTLE_MODE_POINT_ARENA = 2
 BATTLE_MODE_TOTAL_SCORE_SINGLE = 3
 BATTLE_MODE_POINT_SINGLE = 4
+
+BATTLE_RULE_TOTAL_SCORE = "total_score"
+BATTLE_RULE_POINT = "point"
+
+BATTLE_RULE_ARENA = "arena"
+BATTLE_RULE_SINGLE = "single"
+
+BATTLE_RULE_NORMAL = "score"
+BATTLE_RULE_ULTIMATE = "ex_score"
+
 BATTLE_MODE = [
-    {"name": "ARENA スコア制", "value": BATTLE_MODE_TOTAL_SCORE_ARENA},
-    {"name": "ARENA ポイント制", "value": BATTLE_MODE_POINT_ARENA},
-    {"name": "SINGLE スコア制", "value": BATTLE_MODE_TOTAL_SCORE_SINGLE},
-    {"name": "SINGLE ポイント制", "value": BATTLE_MODE_POINT_SINGLE},
+    {
+        "name": "ARENA スコア制", 
+        "value": BATTLE_MODE_TOTAL_SCORE_ARENA, 
+        "rule": [BATTLE_RULE_TOTAL_SCORE, BATTLE_RULE_ARENA, BATTLE_RULE_NORMAL],
+    },
+    {
+        "name": "ARENA ポイント制", 
+        "value": BATTLE_MODE_POINT_ARENA, 
+        "rule": [BATTLE_RULE_POINT, BATTLE_RULE_ARENA, BATTLE_RULE_NORMAL],
+    },
+    {
+        "name": "SINGLE スコア制", 
+        "value": BATTLE_MODE_TOTAL_SCORE_SINGLE, 
+        "rule": [BATTLE_RULE_TOTAL_SCORE, BATTLE_RULE_SINGLE, BATTLE_RULE_NORMAL],
+    },
+    {
+        "name": "SINGLE ポイント制", 
+        "value": BATTLE_MODE_POINT_SINGLE, 
+        "rule": [BATTLE_RULE_POINT, BATTLE_RULE_SINGLE, BATTLE_RULE_NORMAL],
+    },
 ]
 
 # リザルト取得手段

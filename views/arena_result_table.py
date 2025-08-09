@@ -1,12 +1,12 @@
 import flet as ft
-from config.config import BATTLE_MODE_TOTAL_SCORE_ARENA
+from config.config import BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_RULE_NORMAL, BATTLE_RULE_POINT
+from utils.common import has_rule_in_mode
 
 DIFFICULTY_COLOR_MAP = {
-    "BEGINNER": "#d3e173",
-    "NORMAL": "#21efef",
-    "HYPER": "#ffc800",
-    "ANOTHER": "#fba8c1",
-    "LEGGENDARIA": "#ce8ef9",
+    "NOV": "#aaaaff",
+    "ADV": "#ffffaa",
+    "EXH": "#ffaaaa",
+    "APPEND": "#ffccff",
 }
 
 MAIN_COLOR = "#EEEEEE"
@@ -52,10 +52,14 @@ class ArenaResultTable:
 
     def _user_score(self, result: dict | None) -> ft.Column:
         if result:
-            label = f"SCORE: {result['score']}" if self.mode == BATTLE_MODE_TOTAL_SCORE_ARENA else f"EX SCORE: {result['ex_score']}"
+            label = ""
+            if has_rule_in_mode(self.mode, BATTLE_RULE_POINT):
+                label = f"SCORE: {result['score']}" if has_rule_in_mode(self.mode, BATTLE_RULE_NORMAL)  else f"EX SCORE: {result['ex_score']}"
             value = result.get("pt", 0)
         else:
-            label = "SCORE: -" if self.mode == BATTLE_MODE_TOTAL_SCORE_ARENA else "EX SCORE: -"
+            label = ""
+            if has_rule_in_mode(self.mode, BATTLE_RULE_POINT):
+                label = "SCORE: -" if has_rule_in_mode(self.mode, BATTLE_RULE_NORMAL) else "EX SCORE: -"
             value = "-"
 
         return ft.Column([
@@ -71,7 +75,7 @@ class ArenaResultTable:
     def _song_info(self, song: dict) -> ft.Column:
         stage_no = song.get("stage_no", 1)
         stage_suffix = {1: "ST", 2: "ND", 3: "RD"}.get(stage_no if stage_no < 20 else stage_no % 10, "TH")
-        stage_label = f"{stage_no}{stage_suffix} STAGE"
+        stage_label = f"{stage_no}{stage_suffix} TRACK"
 
         title = song.get("song_name", "")
         difficulty = song.get("difficulty", "")
@@ -197,18 +201,30 @@ class ArenaResultTable:
         return total
 
     def _build_total_row(self) -> ft.Row:
+        # 各ユーザーの合計ポイントを取得
+        total_pts = [self._get_total_pt(i) for i in range(len(self.user_ids))]
+        # 最大値を取得（同点対応のため）
+        max_pt = max(total_pts) if total_pts else None
+        
         return ft.Container(
             content=ft.Row(
                 controls=[
                     ft.Container(width=360),
                     *[
-                        ft.Column([
-                            ft.Text("TOTAL", size=10, color=MAIN_COLOR),
-                            ft.Text(str(self._get_total_pt(i)), size=24, color=MAIN_COLOR)
-                        ], alignment=ft.MainAxisAlignment.CENTER,
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        expand=True)
-                        for i in range(len(self.user_ids))
+                        ft.Column(
+                            [
+                                ft.Text("TOTAL", size=10, color=MAIN_COLOR),
+                                ft.Text(
+                                    str(pt),
+                                    size=24,
+                                    color="#fab27b" if pt == max_pt else MAIN_COLOR
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            expand=True
+                        )
+                        for pt in total_pts
                     ]
                 ]
             ),

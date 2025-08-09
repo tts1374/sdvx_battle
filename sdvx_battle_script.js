@@ -31,12 +31,12 @@ async function fetchResult() {
 function indicator(i) {
   i = Math.abs(i);
   const cent = i % 100;
-  if (cent >= 10 && cent <= 20) return "th";
+  if (cent >= 10 && cent <= 20) return "TH";
   const dec = i % 10;
   if (dec === 1) return "ST";
   if (dec === 2) return "ND";
   if (dec === 3) return "RD";
-  return "th";
+  return "TH";
 }
 
 function renderSongInfo(song, type) {
@@ -57,15 +57,15 @@ function renderSongInfo(song, type) {
   `;
 }
 
-function renderBPLBattleUser(mode, r, position, is_pt_enabled) {
+function renderSingleBattleUser(mode, r, position, is_pt_enabled) {
   const ptClass = is_pt_enabled ? `result_${sanitizeClass(r.pt)}` : "";
   const posClass = sanitizeClass(position);
 
-  let html = `<div class="user_result bpl flex-glow result_${posClass}">`;
+  let html = `<div class="user_result Single flex-glow result_${posClass}">`;
 
-  if (mode === 2) {
+  if (mode === 3 || mode === 4) {
     html += `<div class="user_result_title">SCORE</div>`;
-  } else if (mode === 4) {
+  } else if (mode === 7 || mode === 8) {
     html += `<div class="user_result_title">EX SCORE</div>`;
   } else {
     html += "-";
@@ -73,9 +73,9 @@ function renderBPLBattleUser(mode, r, position, is_pt_enabled) {
 
   if (r) {
     html += `<div class="user_result_score ${ptClass}">`;
-    if (mode === 2) {
+    if (mode === 3 || mode === 4) {
       html += `${escapeHTML(r.score)}`;
-    } else if (mode === 4) {
+    } else if (mode === 7 || mode === 8) {
       html += `${escapeHTML(r.ex_score)}`;
     } else {
       html += "-";
@@ -92,9 +92,9 @@ function renderArenaUser(mode, r) {
   if (r) {
     html += `<div class="user_result_score">${escapeHTML(r.pt)}</div>`;
     html += `<div class="user_result_bottom">`;
-    if (mode === 1) {
+    if (mode === 2) {
       html += `SCORE : ${escapeHTML(r.score)}`;
-    } else if (mode === 3) {
+    } else if (mode === 6) {
       html += `EX SCORE : ${escapeHTML(r.ex_score)}`;
     } else {
       html += "-";
@@ -107,7 +107,7 @@ function renderArenaUser(mode, r) {
   return html;
 }
 
-function renderBPLTotal(songsOrig, users, user_id_1, user_id_2) {
+function renderSingleTotal(songsOrig, users, user_id_1, user_id_2) {
   let user_1_total_pt = 0;
   let user_2_total_pt = 0;
 
@@ -124,21 +124,24 @@ function renderBPLTotal(songsOrig, users, user_id_1, user_id_2) {
     }
   });
 
+  const user1topClass = user_1_total_pt >= user_2_total_pt ? 'top_score' : '';
+  const user2topClass = user_2_total_pt >= user_1_total_pt ? 'top_score' : '';
+
   return `
     <div class="result_area">
       <div class="user flex-glow">
         <div class="label">TOTAL</div>
-        <div class="total_pt">${escapeHTML(user_1_total_pt)}</div>
+        <div class="total_pt ${user1topClass}">${escapeHTML(user_1_total_pt)}</div>
       </div>
       <div class="user flex-glow">
         <div class="label">TOTAL</div>
-        <div class="total_pt">${escapeHTML(user_2_total_pt)}</div>
+        <div class="total_pt ${user2topClass}">${escapeHTML(user_2_total_pt)}</div>
       </div>
     </div>
   `;
 }
 
-function renderBPLBattle(mode, users, songsOrig) {
+function renderSingleBattle(mode, users, songsOrig) {
   const songs = songsOrig.slice(0, 4);
   const user_id_1 = users[0].user_id;
   const user_id_2 = users[1].user_id;
@@ -158,14 +161,14 @@ function renderBPLBattle(mode, users, songsOrig) {
     const resultMap = {};
     results.forEach((r) => (resultMap[r.user_id] = r));
 
-    html += renderBPLBattleUser(
+    html += renderSingleBattleUser(
       mode,
       resultMap[user_id_1],
       "left",
       results.length === users.length
     );
-    html += renderSongInfo(song, "bpl");
-    html += renderBPLBattleUser(
+    html += renderSongInfo(song, "Single");
+    html += renderSingleBattleUser(
       mode,
       resultMap[user_id_2],
       "right",
@@ -174,7 +177,7 @@ function renderBPLBattle(mode, users, songsOrig) {
     html += "</li>";
   });
 
-  html += renderBPLTotal(songsOrig, users, user_id_1, user_id_2);
+  html += renderSingleTotal(songsOrig, users, user_id_1, user_id_2);
   return html;
 }
 
@@ -215,12 +218,18 @@ function renderArenaBattle(mode, users, songsOrig) {
     });
   });
 
+  // 最大値を取得
+  const maxTotal = Math.max(...Object.values(totalScoreMap));
+
   html += '<div class="result_area"><div class="song_item"></div>';
   users.forEach((u) => {
+    const isTop = totalScoreMap[u.user_id] === maxTotal;
+    const topClass = isTop ? 'top_score' : '';
+    
     html += `<div class="user flex-glow">
-    <div class="label">TOTAL</div>
-    <div class="total_pt">${escapeHTML(totalScoreMap[u.user_id])}</div>
-  </div>`;
+      <div class="label">TOTAL</div>
+      <div class="total_pt ${topClass}">${escapeHTML(totalScoreMap[u.user_id])}</div>
+    </div>`;
   });
   html += "</div>";
 
@@ -235,10 +244,10 @@ function renderTable(data) {
   const fragment = document.createDocumentFragment();
   const wrapper = document.createElement("div");
 
-  if (mode === 1 || mode === 3) {
+  if (mode === 1 || mode === 2) {
     wrapper.innerHTML = renderArenaBattle(mode, users, songs);
-  } else if (mode === 2 || mode === 4) {
-    wrapper.innerHTML = renderBPLBattle(mode, users, songs);
+  } else if (mode === 3 || mode === 4) {
+    wrapper.innerHTML = renderSingleBattle(mode, users, songs);
   }
 
   while (wrapper.firstChild) {

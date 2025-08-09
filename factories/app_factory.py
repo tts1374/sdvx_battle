@@ -116,7 +116,6 @@ class AppFactory(IAppFactory):
         )
     @classmethod
     def create_result_send_usecase(cls):
-        session = cls.create_session()
         websocket_client = cls.create_websocket_client()
         return ResultSendUsecase(websocket_client)
     @classmethod

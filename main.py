@@ -10,7 +10,7 @@ def main(page: ft.Page):
     try:
         run_migrations()
 
-        page.title = "INFINITAS オンライン対戦"
+        page.title = "SDVX オンライン対戦"
         page.window.width = 1200
         page.window.height = 900
         page.window.min_width = 1200

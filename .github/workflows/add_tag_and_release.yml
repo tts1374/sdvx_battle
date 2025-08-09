@@ -57,13 +57,13 @@ jobs:
 
       - name: Zip output
         run: |
-          powershell Compress-Archive -Path dist/INFINITAS_Online_Battle/* -DestinationPath dist/INFINITAS_Online_Battle.zip
+          powershell Compress-Archive -Path dist/SDVX_Battle/* -DestinationPath dist/SDVX_Battle.zip
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.extract_version.outputs.version }}
           draft: true
-          files: dist/INFINITAS_Online_Battle.zip
+          files: dist/SDVX_Battle.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

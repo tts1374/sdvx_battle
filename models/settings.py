@@ -3,7 +3,8 @@ import os
 import re
 from typing import Optional
 
-from config.config import BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_MODE_TOTAL_SCORE_SINGLE, BATTLE_MODE_POINT_ARENA, BATTLE_MODE_POINT_SINGLE, RESULT_SOURCE_SDVX_HELPER
+from config.config import BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_MODE_TOTAL_SCORE_SINGLE, BATTLE_MODE_POINT_ARENA, BATTLE_MODE_POINT_SINGLE, BATTLE_RULE_SINGLE, RESULT_SOURCE_SDVX_HELPER
+from utils.common import has_rule_in_mode
 
 MUSICTABLE_VERSION = "1.1"
 
@@ -31,7 +32,7 @@ class Settings:
         djname_ok = re.fullmatch(r'^[a-zA-Z0-9.\-\*&!?#$]{1,6}$', self.djname) is not None
         room_pass_ok = re.fullmatch(r'^[a-zA-Z0-9_-]{4,36}$', self.room_pass) is not None
         mode_ok = self.mode in [BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_MODE_POINT_ARENA, BATTLE_MODE_TOTAL_SCORE_SINGLE, BATTLE_MODE_POINT_SINGLE]
-        user_num_ok = (self.mode in [BATTLE_MODE_TOTAL_SCORE_SINGLE, BATTLE_MODE_POINT_SINGLE]) or (self.user_num != 0)
+        user_num_ok = has_rule_in_mode(self.mode, BATTLE_RULE_SINGLE) or (self.user_num != 0)
         result_source_ok = self.result_source in [RESULT_SOURCE_SDVX_HELPER]
         file_ok = self.result_dir is not None and self.result_file_exists()
 

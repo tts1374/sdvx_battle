@@ -1,13 +1,16 @@
+import os
+import sys
 import threading
+import traceback
 from typing import Optional
 import flet as ft
 import asyncio
+from db.database import engine
 
-
-from config.config import BATTLE_MODE, BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_MODE_POINT_ARENA, RESULT_SOURCE_SDVX_HELPER
+from config.config import BATTLE_MODE, BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_RULE_ARENA, RESULT_SOURCE_SDVX_HELPER
 from factories.i_app_factory import IAppFactory
 from models.settings import Settings
-from utils.common import safe_print
+from utils.common import has_rule_in_mode, safe_print
 from views.arena_result_table import ArenaResultTable
 from views.single_result_table import SingleResultTable
 
@@ -351,6 +354,31 @@ class MainView:
         if e.data == "close":
             await self.on_close()
     
+    def dump_threads():
+        print("\n==== 残っているスレッド一覧 ====")
+        for thread in threading.enumerate():
+            print(f"[Thread] name={thread.name}, daemon={thread.daemon}, ident={thread.ident}")
+        print("\n==== スレッドのスタックトレース ====")
+        frames = sys._current_frames()
+        for thread in threading.enumerate():
+            print(f"\n# Thread: {thread.name} (id={thread.ident})")
+            frame = frames.get(thread.ident, None)
+            if frame:
+                traceback.print_stack(frame)
+            else:
+                print("  (スタック情報なし)")
+
+    def dump_asyncio_tasks():
+        print("\n==== 残っている asyncio タスク一覧 ====")
+        for task in asyncio.all_tasks():
+            coro = task.get_coro()
+            name = getattr(coro, '__name__', str(coro))
+            print(f"[Task] coro={name}, done={task.done()}, cancelled={task.cancelled()}")
+            if not task.done():
+                print("  --- タスクスタック ---")
+                for frame in task.get_stack():
+                    traceback.print_stack(frame)
+                    
     async def on_close(self):
         safe_print("[on_close] start")
         try:
@@ -358,23 +386,28 @@ class MainView:
         except Exception as ex:
             safe_print(f"[on_close] エラー: {ex}")
         finally:
-            safe_print("[on_close] close")
+            # DB切断
+            safe_print("[on_close] DB dispose")
+            try:
+                engine.dispose()
+            except Exception as e:
+                safe_print(f"[DB dispose error] {e}")
+            
+            # ウィンドウ閉じる
+            safe_print("[on_close] window close")
             self.page.window.prevent_close = False
             self.page.window.close()
-            # 念のため少し待つ（0.1秒程度）
-            await asyncio.sleep(0.1)
+            
+            await asyncio.sleep(0.1)  # 少し待つ
 
-            # すべてのタスクをキャンセルして待つ（自分以外）
-            tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-            for t in tasks:
-                t.cancel()
-            await asyncio.gather(*tasks, return_exceptions=True)
-            
-            for thread in threading.enumerate():
-                print(f"[残スレッド] name={thread.name}, daemon={thread.daemon}, ident={thread.ident}")
-            
-            # 最後の保険
-            import os
+            # 残っているタスク一覧表示
+            self.dump_asyncio_tasks()
+
+            # 残っているスレッド一覧表示
+            self.dump_threads()
+
+            # 最後に強制終了（本番では削除可）
+            safe_print("[on_close] 強制終了")
             os._exit(0)
             
     
@@ -386,7 +419,7 @@ class MainView:
         
         mode = result.get("mode", BATTLE_MODE_TOTAL_SCORE_ARENA)
         setting_visible = self.setting_group.visible
-        if mode == BATTLE_MODE_TOTAL_SCORE_ARENA or mode == BATTLE_MODE_POINT_ARENA:
+        if has_rule_in_mode(mode, BATTLE_RULE_ARENA):
             self.result_table_container.content = ArenaResultTable(self.page, result, self._on_skip_song, self._on_delete_song_confirm, setting_visible, is_enable_operation).build()
         else:
             self.result_table_container.content = SingleResultTable(self.page, result, self._on_skip_song, self._on_delete_song_confirm, setting_visible, is_enable_operation).build()

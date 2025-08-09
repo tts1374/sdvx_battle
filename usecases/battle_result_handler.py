@@ -1,6 +1,6 @@
 from itertools import groupby
 
-from config.config import OPERATION_DELETE, OPERATION_REGISTER
+from config.config import BATTLE_RULE_ARENA, BATTLE_RULE_NORMAL, BATTLE_RULE_POINT, BATTLE_RULE_SINGLE, BATTLE_RULE_TOTAL_SCORE, OPERATION_DELETE, OPERATION_REGISTER
 from models.settings import Settings
 from repositories.db.i_room_repository import IRoomRepository
 from repositories.db.i_song_repository import ISongRepository
@@ -8,7 +8,7 @@ from repositories.db.i_song_result_repository import ISongResultRepository
 from repositories.db.i_user_repository import IUserRepository
 from repositories.files.i_output_file_repository import IOutputFileRepository
 from usecases.i_battle_result_handler import IBattleResultHandler
-from utils.common import safe_print
+from utils.common import has_rule_in_mode, safe_print
 
 
 class BattleResultHandler(IBattleResultHandler):
@@ -156,7 +156,7 @@ class BattleResultHandler(IBattleResultHandler):
             results = self.song_result_repository.list_by_song_id(self.room_id, song["song_id"])
 
             # 順位ソート用キー
-            if self.settings.mode in [1, 2]:
+            if has_rule_in_mode(self.settings.mode, BATTLE_RULE_NORMAL):
                 sort_key = lambda x: x["score"]
             else:
                 sort_key = lambda x: -x["ex_score"]
@@ -166,30 +166,33 @@ class BattleResultHandler(IBattleResultHandler):
 
             # pt計算
             pt_dict = {}  # user_id -> pt
+            if has_rule_in_mode(self.settings.mode, BATTLE_RULE_POINT):
+                if len(results) >= self.settings.user_num:
+                    rank = 0
+                    pt_value = 2 if has_rule_in_mode(self.settings.mode, BATTLE_RULE_ARENA) else 1
+                    
+                    # groupbyで同点グループにまとめる
+                    for score_value, group in groupby(sorted_results, key=sort_key):
+                        same_rank_users = list(group)
 
-            if len(results) >= self.settings.user_num:
-                rank = 0
-                pt_value = 2 if self.settings.mode in [1, 3] else 1
+                        for user in same_rank_users:
+                            pt_dict[user["user_id"]] = pt_value
 
-                # groupbyで同点グループにまとめる
-                for score_value, group in groupby(sorted_results, key=sort_key):
-                    same_rank_users = list(group)
+                        # ptは順位で減らす（同点は同じpt）
+                        if has_rule_in_mode(self.settings.mode, BATTLE_RULE_ARENA):
+                            pt_value = max(pt_value - 1, 0)  # 最小0
+                        elif has_rule_in_mode(self.settings.mode, BATTLE_RULE_SINGLE):
+                            pt_value = 0  # 1位だけ1pt
+                        # 次の順位へ（rankを使う場合は += len(same_rank_users))
 
-                    for user in same_rank_users:
-                        pt_dict[user["user_id"]] = pt_value
-
-                    # ptは順位で減らす（同点は同じpt）
-                    if self.settings.mode in [1, 3]:
-                        pt_value = max(pt_value - 1, 0)  # 最小0
-                    elif self.settings.mode in [2, 4]:
-                        pt_value = 0  # 1位だけ1pt
-                    # 次の順位へ（rankを使う場合は += len(same_rank_users))
-
-            else:
-                # 人数が足りないときは全員0pt
+                else:
+                    # 人数が足りないときは全員0pt
+                    for res in results:
+                        pt_dict[res["user_id"]] = 0
+            elif has_rule_in_mode(self.settings.mode, BATTLE_RULE_TOTAL_SCORE):
                 for res in results:
-                    pt_dict[res["user_id"]] = 0
-
+                    pt_dict[res["user_id"]] = res["score"] if has_rule_in_mode(self.settings.mode, BATTLE_RULE_NORMAL) else res["ex_score"]
+            
             # 結果に反映
             for res in results:
                 song_dict["results"].append({

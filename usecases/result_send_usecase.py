@@ -24,16 +24,15 @@ class ResultSendUsecase(IResultSendUsecase):
 
 		if settings.result_source == RESULT_SOURCE_SDVX_HELPER:
 			root = ET.fromstring(content)
-			first_item = root.find('Items')
-			if first_item is None:
-				raise ValueError("XMLに<Items>がありません")
-
-			level = first_item.findtext('lv')
-			song_name = first_item.findtext('title')
-			difficulty = first_item.findtext('difficulty').upper()
-			first_result = first_item.find('Result')
+	
+			level = root.findtext('lv')
+			song_name = root.findtext('title')
+			difficulty = root.findtext('difficulty').upper()
+			first_result = root.find('Result')
 			score = 0
 			ex_score = 0
+			if first_result is not None:
+				score = first_result.findtext('score')
 
 			result_data = {
 				"mode": settings.mode,
@@ -46,7 +45,7 @@ class ResultSendUsecase(IResultSendUsecase):
 					"song_name": song_name,
 					"difficulty": difficulty,
 					"score": score,
-					"ex_score": 0, #一旦EX SCOREは取れないので0
+					"ex_score": ex_score, #一旦EX SCOREは取れないので0
 				}
 			}
 

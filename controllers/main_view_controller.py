@@ -5,12 +5,12 @@ import time
 import uuid
 
 from application.i_main_app_service import IMainAppSerivce
-from config.config import BATTLE_MODE_POINT_ARENA, BATTLE_MODE_TOTAL_SCORE_ARENA
+from config.config import BATTLE_RULE_ARENA
 from controllers.i_main_view_controller import IMainViewController
 from errors.connection_failed_error import ConnectionFailedError
 from models.settings import Settings
 from repositories.files.file_watcher import FileWatcher
-from utils.common import safe_int, safe_print
+from utils.common import has_rule_in_mode, safe_int, safe_print
 from watchdog.observers import Observer
 import flet as ft
 
@@ -35,7 +35,7 @@ class MainViewController(IMainViewController):
         self.app.mode_select.value = settings.mode
         self.app.result_source.value = settings.result_source
 
-        if int(settings.mode) in [BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_MODE_POINT_ARENA]:
+        if has_rule_in_mode(settings.mode, BATTLE_RULE_ARENA):
             self.app.user_num_select.disabled = False
             self.app.user_num_select.value = settings.user_num
         else:
@@ -72,7 +72,7 @@ class MainViewController(IMainViewController):
 
     def change_mode(self):
         mode = safe_int(self.app.mode_select.value)
-        if mode in [BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_MODE_POINT_ARENA]:
+        if has_rule_in_mode(mode, BATTLE_RULE_ARENA) :
             self.app.user_num_select.disabled = False
         else:
             self.app.user_num_select.disabled = True
@@ -89,7 +89,7 @@ class MainViewController(IMainViewController):
 
     def validate_inputs(self):
         mode_value = safe_int(self.app.mode_select.value)
-        user_num = 2 if mode_value in [BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_MODE_POINT_ARENA] else safe_int(self.app.user_num_select.value)
+        user_num = 2 if has_rule_in_mode(mode_value, BATTLE_RULE_ARENA) else safe_int(self.app.user_num_select.value)
         result_source = safe_int(self.app.result_source.value)
         
         settings = Settings(
@@ -117,7 +117,7 @@ class MainViewController(IMainViewController):
         try:
             # 設定ファイル保存
             mode_value = int(self.app.mode_select.value)
-            user_num = int(self.app.user_num_select.value) if mode_value in [BATTLE_MODE_TOTAL_SCORE_ARENA, BATTLE_MODE_POINT_ARENA] else 2
+            user_num = int(self.app.user_num_select.value) if has_rule_in_mode(mode_value, BATTLE_RULE_ARENA) else 2
             result_source = int(self.app.result_source.value)
             
             settings = Settings(
