@@ -20,7 +20,7 @@ def get_log_dir():
         return os.path.dirname(sys.executable)
     else:
         # 通常のPython実行時
-        return os.path.dirname(os.path.abspath(__file__))
+        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def safe_print(*args, **kwargs):
     try:
